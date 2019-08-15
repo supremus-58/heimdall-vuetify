@@ -13,7 +13,7 @@
     "apexcharts": "^3.8.4",
     "c3": "^0.5.4",
     "core-js": "^2.6.5",
-    "inspecjs": "0.1.0",
+    "inspecjs": "0.2.0",
     "roboto-fontface": "*",
     "vue": "^2.6.10",
     "vue-apexcharts": "^1.4.0",
