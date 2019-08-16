@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@types/c3": "^0.7.2",
+    "@types/d3": "^5.7.2",
     "apexcharts": "^3.8.4",
     "c3": "^0.5.4",
     "core-js": "^2.6.5",
-    "inspecjs": "0.2.0",
+    "d3": "^5.9.7",
+    "inspecjs": "0.2.2",
     "roboto-fontface": "*",
     "vue": "^2.6.10",
     "vue-apexcharts": "^1.4.0",
