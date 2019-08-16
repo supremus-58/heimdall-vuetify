@@ -50,7 +50,6 @@
                 <rect
                   class="parent"
                   @click="selectNode(child)"
-                  :id="child.id"
                   :key="`child_body_group_${child.id}`"
                   :x="x(child.x0)"
                   :y="y(child.y0)"
@@ -72,7 +71,7 @@
                   :y="y(child.y0) + 6"
                   style="fill-opacity: 1;"
                 >
-                  {{ child.data.name }}
+                  {{ label(child.data) }}
                 </text>
 
                 <text
@@ -96,12 +95,11 @@
                 :width="width"
                 :y="top_margin * -1"
                 v-if="selectedNode.parent"
-                :id="selectedNode.parent.id"
               ></rect>
 
               <!-- The visible square text element with the id (basically a breadcumb, if you will) -->
               <text dy=".65em" x="6" y="-14">
-                {{ selectedNode.id }}
+                {{ label(selectedNode.data) }}
               </text>
             </g>
           </g>
@@ -234,6 +232,7 @@ export default class Treemap extends TreemapProps {
       .size([this.width, this.height])
       .round(false)
       .paddingInner(0)(heirarchy);
+    console.log(treemap);
     return treemap;
   }
 
@@ -278,6 +277,7 @@ export default class Treemap extends TreemapProps {
     return {
       Passed: cmod.lookupColor("statusPassed"),
       Failed: cmod.lookupColor("statusFailed"),
+      "No Data": cmod.lookupColor("statusNoData"),
       "Not Applicable": cmod.lookupColor("statusNotApplicable"),
       "Not Reviewed": cmod.lookupColor("statusNotReviewed"),
       "Profile Error": cmod.lookupColor("statusProfileError"),

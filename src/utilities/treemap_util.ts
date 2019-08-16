@@ -43,7 +43,7 @@ export function nistHashToTreeMap(hash: NistHash): TreemapNode {
     .sum(d => {
       // We punish the type system a bit here but it doesn't really matter
       if (isNistGrouping(d)) {
-        return d.count;
+        return 0; //d.count;
       } else {
         return 1;
       }
