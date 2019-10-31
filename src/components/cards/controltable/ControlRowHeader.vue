@@ -3,26 +3,31 @@
   <ResponsiveRowSwitch>
     <template #status>
       <v-card
-        class="ma-1"
         :color="status_color"
+        class="pl-2 font-weight-bold"
         hover
         @click="$emit('toggle', !expanded)"
       >
-        <v-card-text class="pa-2">
+        <v-card-text class="pa-2 font-weight-bold">
           {{ control.status }}
-          <v-icon class="float-right">{{
-            expanded ? "expand_more" : "expand_less"
-          }}</v-icon>
+          <v-icon class="float-right">
+            {{ expanded ? "mdi-chevron-down" : "mdi-chevron-up" }}
+          </v-icon>
         </v-card-text>
       </v-card>
     </template>
 
     <template #severity>
       <v-card-text class="pa-2">
-        <v-icon v-for="i in severity_arrow_count" :key="i" class="stack-icon">
-          chevron_right
-        </v-icon>
-        {{ control.severity }}
+        <v-icon small v-for="i in severity_arrow_count" :key="i"
+          >mdi-checkbox-blank-circle</v-icon
+        >
+        <v-icon small v-for="i in 4 - severity_arrow_count" :key="5 - i"
+          >mdi-checkbox-blank-circle-outline</v-icon
+        >
+        <br />
+        <v-divider class="lighten-4 mx-1"></v-divider>
+        {{ control.severity.toUpperCase() }}
       </v-card-text>
     </template>
 
@@ -35,15 +40,7 @@
       <v-card-text class="pa-2">{{ control.wraps.id }}</v-card-text>
     </template>
     <template #tags>
-      <v-chip-group column active-class="NONE">
-        <v-chip
-          v-for="tag in control.fixed_nist_tags"
-          :key="tag"
-          active-class="NONE"
-        >
-          {{ tag }}
-        </v-chip>
-      </v-chip-group>
+      <span>{{ control.nist_tags.join(", ") }}</span>
     </template>
   </ResponsiveRowSwitch>
 </template>
@@ -110,14 +107,7 @@ export default class ControlRowHeader extends ControlRowHeaderProps {
 </script>
 
 <style scoped>
-.center {
-  text-align: justify;
-}
-
-.stack-icon {
-  margin-left: -8px;
-  margin-right: -8px;
-  margin-top: -8px;
-  margin-bottom: -8px;
+.lightened-row .v-card {
+  background: var(--v-background-lighten-2);
 }
 </style>

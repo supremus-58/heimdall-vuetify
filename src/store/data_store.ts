@@ -3,20 +3,17 @@
  */
 
 import { Module, VuexModule, Mutation, Action } from "vuex-module-decorators";
-import {
-  AnyExec as Execution,
-  AnyProfile as Profile,
-  AnyFullControl as Control,
-  HDFControl
-} from "inspecjs";
-import {
-  FileID,
-  ExecutionFile,
-  ProfileFile,
-  InspecFile
-} from "@/store/report_intake";
+import { HDFControl, parse, schemas_1_0 } from "inspecjs";
+import { FileID, ExecutionFile, ProfileFile } from "@/store/report_intake";
 import Store from "@/store/store";
-import { ExecJSONProfile } from "inspecjs/dist/generated-parsers/exec-json";
+import { AnyFullControl } from "inspecjs/dist/fileparse";
+
+// Alias some types
+type Execution = parse.AnyExec;
+type Profile = parse.AnyProfile;
+type Control = parse.AnyFullControl;
+
+type ExecProfile = schemas_1_0.ExecJSON.Profile;
 
 /**
  * Mixin type to express that this type wraps another data type to add additional fields,
@@ -143,7 +140,8 @@ class InspecDataModule extends VuexModule {
       // After our initial save of profiles, we go over them _again_ to establish parentage/dependency
       exec_file_context.contains.forEach(exec_files_profile => {
         // We know these are from a report; label as such
-        let as_exec = exec_files_profile.data as ExecJSONProfile;
+        let as_exec = exec_files_profile.data as ExecProfile;
+
         // If it has a parent profile then we link them by extendedby/extendsfrom
         if (as_exec.parent_profile !== undefined) {
           // Look it up
@@ -181,16 +179,18 @@ class InspecDataModule extends VuexModule {
     // At this point all executions/profiles are in, but none of their controls are.
     // Add them first, establishing the parent/child relationship while we do so
     profiles.forEach(profile_context => {
-      profile_context.data.controls.forEach(profile_control => {
-        let profile_control_context: ContextualizedControl = {
-          data: profile_control,
-          sourced_from: profile_context,
-          extended_by: [],
-          extends_from: []
-        };
-        profile_context.contains.push(profile_control_context);
-        controls.push(profile_control_context);
-      });
+      profile_context.data.controls.forEach(
+        (profile_control: AnyFullControl) => {
+          let profile_control_context: ContextualizedControl = {
+            data: profile_control,
+            sourced_from: profile_context,
+            extended_by: [],
+            extends_from: []
+          };
+          profile_context.contains.push(profile_control_context);
+          controls.push(profile_control_context);
+        }
+      );
     });
 
     // Now one final step: pair up controls by their overlays.
@@ -237,21 +237,6 @@ class InspecDataModule extends VuexModule {
    */
   get contextualControls(): readonly ContextualizedControl[] {
     return this.contextStore[2];
-  }
-
-  /**
-   * Yields a guaranteed currently free file ID.
-   * This is the computed as the highest currently held file id + 1
-   * It does not "fill spaces" of closed files, so that in any given
-   * session we will never repeat a file ID with a different file object.
-   */
-  get nextFreeFileID(): FileID {
-    let currentMax = 0;
-    // If we have any files find the max among them
-    if (this.allFiles.length) {
-      currentMax = Math.max(...this.allFiles.map(f => f.unique_id));
-    }
-    return currentMax + 1;
   }
 
   /**

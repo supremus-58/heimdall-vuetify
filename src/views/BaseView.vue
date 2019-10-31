@@ -4,12 +4,14 @@
 <template>
   <div>
     <!-- Top appbar. The center content of it is configured via the topbar-content slot -->
-    <Topbar @toggle-drawer="drawer = !drawer">
+    <Topbar :title="title" @toggle-drawer="drawer = !drawer">
       <slot name="topbar-content"></slot>
     </Topbar>
 
     <!-- Sidebar to navigate between different views -->
-    <Sidebar v-model="drawer" />
+    <Sidebar v-model="drawer">
+      <slot name="sidebar-content-tools"></slot>
+    </Sidebar>
 
     <!-- The actual content. Slotted by our "descendants" -->
     <v-content>
@@ -31,7 +33,12 @@ import Topbar from "@/components/global/Topbar.vue";
 // We declare the props separately
 // to make props types inferable.
 const BaseProps = Vue.extend({
-  props: {}
+  props: {
+    title: {
+      type: String,
+      default: "Heimdall Lite"
+    }
+  }
 });
 
 @Component({

@@ -4,60 +4,42 @@
     @input="$emit('input', $event)"
     :clipped="$vuetify.breakpoint.lgAndUp"
     app
+    style="margin-top: 56px;"
+    disable-resize-watcher
+    fixed
+    temporary
+    width="375px"
   >
-    <v-list dense>
-      <template v-for="item in items">
-        <!-- Link lists -->
-        <v-list-group v-if="item.children" :key="item.text">
-          <!-- The expand toggle -->
-          <template v-slot:activator>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title>{{ item.text }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-          <!-- The items -->
-          <LinkItem
-            v-for="(child, i) in item.children"
-            :key="i"
-            :text="child.text"
-            :icon="child.icon"
-          />
-        </v-list-group>
+    <v-list dense class="px-2" subheader>
+      <v-subheader>Files</v-subheader>
+      <FileItem v-for="(file, i) in visible_files" :key="i" :file="file" />
+      <v-list-item to="/results/all" title="Show all files' controls">
+        <v-list-item-avatar>
+          <v-icon small>list</v-icon>
+        </v-list-item-avatar>
 
-        <!-- File lists -->
-        <v-list-group
-          v-else-if="item.files"
-          :key="item.text"
-          v-model="item.model"
-        >
-          <!-- The expand toggle -->
-          <template v-slot:activator>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title>{{ item.text }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-          <!-- The items -->
-          <FileItem v-for="(file, i) in item.files" :key="i" :file="file" />
-        </v-list-group>
-
-        <!-- Simple, independent links -->
-        <LinkItem v-else :key="item.text" :text="item.text" :icon="item.icon" />
-      </template>
+        <v-list-item-content>
+          <v-list-item-title>All reports</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
-    <v-layout align-center>
-      <v-flex class="text-center">
-        <v-switch
-          label="Light/Dark"
-          v-model="dark"
-          v-on:change="updateDark"
-          align-center
-        ></v-switch>
-      </v-flex>
-    </v-layout>
+
+    <v-list dense class="px-2" subheader>
+      <v-subheader>Tools</v-subheader>
+      <slot></slot>
+    </v-list>
+
+    <v-list dense class="px-2" subheader>
+      <v-subheader>Info</v-subheader>
+      <AboutModal />
+      <HelpModal />
+      <v-list-item>
+        <div class="d-flex justify-center">
+          <v-switch label="Light/Dark" v-model="dark" v-on:change="updateDark">
+          </v-switch>
+        </div>
+      </v-list-item>
+    </v-list>
   </v-navigation-drawer>
 </template>
 
@@ -69,24 +51,8 @@ import { getModule } from "vuex-module-decorators";
 import InspecDataModule from "@/store/data_store";
 import FileItem from "@/components/global/sidebaritems/SidebarFile.vue";
 import LinkItem from "@/components/global/sidebaritems/SidebarLink.vue";
-
-interface LinkProps {
-  text: string; // To label the item
-  icon: string; // Visually but same difference
-  link?: string; // Where to redirect to
-}
-
-interface FolderProps {
-  text: string; // To label the item
-  children: LinkProps[]; // Child links
-}
-
-interface FilesProps {
-  text: string; // To label the item
-  files: Array<ExecutionFile | ProfileFile>; // The files to display
-}
-
-type AnyProp = LinkProps | FolderProps | FilesProps;
+import AboutModal from "@/components/global/AboutModal.vue";
+import HelpModal from "@/components/global/HelpModal.vue";
 
 // We declare the props separately to make props types inferable.
 const SidebarProps = Vue.extend({
@@ -98,38 +64,29 @@ const SidebarProps = Vue.extend({
 @Component({
   components: {
     LinkItem,
-    FileItem
+    FileItem,
+    AboutModal,
+    HelpModal
   }
 })
 export default class Sidebar extends SidebarProps {
-  // Dynamic list setup
-  get items(): AnyProp[] {
-    return [
-      { icon: "info", text: "Help" },
-      {
-        text: "Files",
-        files: this.visible_files
-      },
-      {
-        text: "Tools",
-        children: [
-          { text: "Import", icon: "printer" },
-          { text: "Export", icon: "printer" },
-          { text: "Print", icon: "printer" }
-        ]
-      },
-      { icon: "info", text: "About" }
-    ];
-  }
-
+  /** Generates files for all */
   get visible_files(): Array<ProfileFile | ExecutionFile> {
     let data_store = getModule(InspecDataModule, this.$store);
     let files = data_store.allFiles;
+    console.log(files.map(f => f.filename));
+    files = files.sort((a, b) => a.filename.localeCompare(b.filename));
+    console.log(files.map(f => f.filename));
     return files;
   }
 
   /** Whether or not we're dark mode */
   dark: boolean = true;
+
+  /** Initial configuration of dark mode */
+  mounted() {
+    this.dark = this.$vuetify.theme.dark;
+  }
 
   /** Updates theme darkness */
   updateDark() {
@@ -137,3 +94,13 @@ export default class Sidebar extends SidebarProps {
   }
 }
 </script>
+
+<style scoped>
+nav.v-navigation-drawer {
+  /* Need !important as a max-height derived from the footer being always
+     visible is applied directly to element by vuetify */
+  max-height: 100vh !important;
+  /* z-index hides behind footer and topbar */
+  z-index: 1;
+}
+</style>

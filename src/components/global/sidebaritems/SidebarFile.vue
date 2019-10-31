@@ -1,17 +1,16 @@
 <template>
-  <v-list-item :to="`/results/${file.unique_id}`">
+  <v-list-item :to="`/results/${file.unique_id}`" :title="file.filename">
     <v-list-item-avatar>
       <v-icon v-text="icon" small />
     </v-list-item-avatar>
 
     <v-list-item-content>
-      <v-list-item-title>{{ file.filename }}</v-list-item-title>
+      <v-list-item-title v-text="file.filename" />
     </v-list-item-content>
 
-    <v-list-item-action>
-      <v-btn icon x-small v-on:click="close_this_file">
-        <v-icon>close</v-icon
-        ><!--close-circle-->
+    <v-list-item-action @click="close_this_file">
+      <v-btn icon small>
+        <v-icon> mdi-close </v-icon>
       </v-btn>
     </v-list-item-action>
   </v-list-item>
@@ -34,7 +33,9 @@ const FileItemProps = Vue.extend({
   components: {}
 })
 export default class FileItem extends FileItemProps {
-  close_this_file() {
+  close_this_file(evt: Event) {
+    evt.stopPropagation();
+    evt.preventDefault();
     let data_store = getModule(InspecDataModule, this.$store);
     data_store.removeFile(this.file.unique_id);
   }
@@ -43,7 +44,7 @@ export default class FileItem extends FileItemProps {
     if (this.file.profile !== undefined) {
       return "note";
     } else {
-      return "assessment";
+      return "mdi-google-analytics";
     }
   }
 }
